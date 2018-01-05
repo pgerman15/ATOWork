@@ -49,28 +49,55 @@ class Game extends React.Component {
 
             ],
             board: Array(9).fill(null),
-            xIsPlaying: true
+            xIsPlaying: true,
+            currentStepNumber: 0
         }
     }
 
     handleClick(i) {
         const history = this.state.history;
-        const latestTurn = history[history.length - 1];
 
-        if (calculateWinner(this.state.board)) {
+        if (calculateWinner(this.state.board) || this.state.currentStepNumber < this.state.history.length || this.state.board[i]) {
             return;
         }
         const squares = this.state.board.slice();
         squares[i] = this.state.xIsPlaying ? 'X' : 'O';
-        this.setState({ board: squares, xIsPlaying: !this.state.xIsPlaying});
+        this.setState({ 
+            board: squares, 
+            xIsPlaying: !this.state.xIsPlaying, 
+            history: history.concat([{board: squares}]), 
+            currentStepNumber: this.state.currentStepNumber + 1
+        });
+    }
+
+    goToMove(i){
+        console.log('go to move #' + (i + 1));
+        const history = this.state.history;
+        this.setState({
+            board: history[i].board,
+            xIsPlaying: this.state.xIsPlaying,
+            history: this.state.history,
+            currentStepNumber: (i + 1),
+        });
     }
 
     render() {
         const winner = calculateWinner(this.state.board);
+        const history = this.state.history;
+
         let status = 'Next player: ' + (this.state.xIsPlaying ? 'X' : 'O');
         if (winner) {
             status = 'Winner: ' + winner;
         }
+
+        let listItems = [];
+        listItems = history.map((value, index) => {
+            return(
+                <li key={index}>
+                    <button onClick={() => this.goToMove(index)}>Go to move #{index + 1}</button>
+                </li>
+            )
+        });
 
         return (
             <div className="game">
@@ -82,7 +109,7 @@ class Game extends React.Component {
                 </div>
                 <div className="game-info">
                     <div>{status}</div>
-                    <ol>{/* TODO */}</ol>
+                    <ol>{listItems}</ol>
                 </div>
             </div>
         );
